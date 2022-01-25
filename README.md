@@ -3,7 +3,7 @@ useful bash scripts more like libraries.
 
 # installation
 ```
-git clone https://github.com/themispkg/bash-utils.git ; cd bash-util && sudo make install
+git clone https://github.com/themispkg/bash-utils.git ; cd bash-utils && sudo make install
 ```
 # usage
 there are some libraries here and these libraries have manuals please check [manpages]()
