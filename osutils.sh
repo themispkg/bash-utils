@@ -16,6 +16,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+export SUDOUSER="${SUDO_USER:-$USER}"
+
 osutil:check() {
     case "${1}" in
         [rR][oO][oO][tT]|--[rR][oO][oO][tT]|-[rR])
@@ -58,7 +60,7 @@ osutil:check() {
             if [[ "${x}" = "false" ]] ; then
                 return 1
             fi
-       
+
         ;;
         [dD][iI][rR][eE][cC][tT][oO][rR][yY]|--[dD][iI][rR][eE][cC][tT][oO][rR][yY]|-[dD][iI][rR])
             local x="true"
@@ -139,7 +141,7 @@ osutil:define() {
                         return 1
                     fi
                 ;;
-            esac            
+            esac
         ;;
     esac
 }
@@ -167,7 +169,7 @@ osutil:update() {
             echo "unknow base so there is nothing to do"
             return 1
         ;;
-    esac   
+    esac
 }
 
 osutil:install() {
@@ -190,7 +192,6 @@ osutil:install() {
             zypper remove --no-confirm ${1}
         ;;
     esac
-    
 }
 
 osutil:uninstall() {
@@ -213,4 +214,12 @@ osutil:uninstall() {
             zypper remove --no-confirm ${1}
         ;;
     esac
+}
+
+osutil:getfname() {
+    if [[ -d "${2}" ]] ; then
+        echo "${2}/${1}"
+    else
+        echo "${2}"
+    fi
 }
