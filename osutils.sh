@@ -36,7 +36,7 @@ osutil:check() {
             esac
         ;;
         [fF][iI][lL][eE]|--[fF][iI][lL][eE]|-[fF])
-            local x="true"
+            local i="" x="true"
             for i in "${@:2}" ; do
                 if ! [[ -f "${i}" ]] ; then
                     echo -e "file ${i} does not exist!"
@@ -49,7 +49,7 @@ osutil:check() {
             fi
         ;;
         [tT][rR][iI][gG][gG][eE][rR]|--[tT][rR][iI][gG][gG][eE][rR]|-[tT])
-            local x="true"
+            local i="" x="true"
             for i in "${@:2}" ; do
                 if !  command -v "${i}" &> /dev/null ; then
                     echo -e "trigger ${i} not found!"
@@ -63,7 +63,7 @@ osutil:check() {
 
         ;;
         [dD][iI][rR][eE][cC][tT][oO][rR][yY]|--[dD][iI][rR][eE][cC][tT][oO][rR][yY]|-[dD][iI][rR])
-            local x="true"
+            local i="" x="true"
             for i in "${@:2}" ; do
                 if ! [[ -d "${i}" ]] ; then
                     echo -e "directory ${i} does not exist!"
