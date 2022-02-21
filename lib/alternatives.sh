@@ -16,6 +16,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# delphiver: 1
+
 alternatives:filename() {
     command -v "seq" &> /dev/null || return 1
     command -v "awk" &> /dev/null || return 1

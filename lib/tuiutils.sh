@@ -16,6 +16,8 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# delphiver: 1
+
 # Source the file:
 # source /usr/local/lib/bash5.17/tuiutils.sh
 

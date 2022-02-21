@@ -16,6 +16,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# delphiver: 1
 
 # Reset
 reset='\033[0m'           # Text Reset
