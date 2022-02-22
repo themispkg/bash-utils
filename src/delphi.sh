@@ -100,21 +100,21 @@ case "${1}" in
                         if [[ "$(delphi:env:getver "${delphilib}.sh")" -gt "$(echo "${delphiwantlibver}" | cut -c2-)" ]] 2> /dev/null ; then
                             source "${delphidir}/${delphilib}.sh"
                         else
-                            echo -e "the package '${delphilib}.sh' found but the version '$(delphis:env:getver "${delphilib}.sh")' is little than $(echo "${delphiwantlibver}" | cut -c2-) so it will be not source."
+                            echo -e "the package '${delphilib}.sh' found but the version '$(delphi:env:getver "${delphilib}.sh")' isn't greater than $(echo "${delphiwantlibver}" | cut -c2-) so it will be not source."
                             delphistatus="false"
                         fi
                     elif [[ "$(echo "${delphiwantlibver}" | head -c 1)" = "<" ]] 2> /dev/null ; then
                         if [[ "$(delphi:env:getver "${delphilib}.sh")" -lt "$(echo "${delphiwantlibver}" | cut -c2-)" ]] ; then
                             source "${delphidir}/${delphilib}.sh"
                         else
-                            echo -e "the package '${delphilib}.sh' found but the version '$(delphis:env:getver "${delphilib}.sh")' is greater than $(echo "${delphiwantlibver}" | cut -c2-) so it will be not source."
+                            echo -e "the package '${delphilib}.sh' found but the version '$(delphi:env:getver "${delphilib}.sh")' isn't little than $(echo "${delphiwantlibver}" | cut -c2-) so it will be not source."
                             delphistatus="false"
                         fi
                     elif [[ "$(echo "${delphiwantlibver}" | head -c 1)" = "=" ]] 2> /dev/null ; then
                         if [[ "$(delphi:env:getver "${delphilib}.sh")" -eq "$(echo "${delphiwantlibver}" | cut -c2-)" ]] ; then
                             source "${delphidir}/${delphilib}.sh"
                         else
-                            echo -e "the package '${delphilib}.sh' found but the version '$(delphis:env:getver "${delphilib}.sh")' isn't equal than $(echo "${delphiwantlibver}" | cut -c2-) so it will be not source."
+                            echo -e "the package '${delphilib}.sh' found but the version '$(delphi:env:getver "${delphilib}.sh")' isn't equal than $(echo "${delphiwantlibver}" | cut -c2-) so it will be not source."
                             delphistatus="false"
                         fi
                     else
@@ -129,21 +129,21 @@ case "${1}" in
                         if [[ "$(delphi:env:getver "${delphilib}")" -gt "$(echo "${delphiwantlibver}" | cut -c2-)" ]] 2> /dev/null ; then
                             source "${delphidir}/${delphilib}"
                         else
-                            echo -e "the package '${delphilib}.sh' found but the version '$(delphis:env:getver "${delphilib}")' is little than $(echo "${delphiwantlibver}" | cut -c2-) so it will be not source."
+                            echo -e "the package '${delphilib}.sh' found but the version '$(delphi:env:getver "${delphilib}")' isn't greater than $(echo "${delphiwantlibver}" | cut -c2-) so it will be not source."
                             delphistatus="false"
                         fi
                     elif [[ "$(echo "${delphiwantlibver}" | head -c 1)" = "<" ]] 2> /dev/null ; then
                         if [[ "$(delphi:env:getver "${delphilib}")" -lt "$(echo "${delphiwantlibver}" | cut -c2-)" ]] ; then
                             source "${delphidir}/${delphilib}"
                         else
-                            echo -e "the package '${delphilib}.sh' found but the version '$(delphis:env:getver "${delphilib}")' is greater than $(echo "${delphiwantlibver}" | cut -c2-) so it will be not source."
+                            echo -e "the package '${delphilib}.sh' found but the version '$(delphi:env:getver "${delphilib}")' isn't little than $(echo "${delphiwantlibver}" | cut -c2-) so it will be not source."
                             delphistatus="false"
                         fi
                     elif [[ "$(echo "${delphiwantlibver}" | head -c 1)" = "=" ]] 2> /dev/null ; then
                         if [[ "$(delphi:env:getver "${delphilib}")" -eq "$(echo "${delphiwantlibver}" | cut -c2-)" ]] ; then
                             source "${delphidir}/${delphilib}"
                         else
-                            echo -e "the package '${delphilib}.sh' found but the version '$(delphis:env:getver "${delphilib}")' isn't equal than $(echo "${delphiwantlibver}" | cut -c2-) so it will be not source."
+                            echo -e "the package '${delphilib}.sh' found but the version '$(delphi:env:getver "${delphilib}")' isn't equal than $(echo "${delphiwantlibver}" | cut -c2-) so it will be not source."
                             delphistatus="false"
                         fi
                     else
