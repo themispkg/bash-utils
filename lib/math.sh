@@ -30,10 +30,13 @@ math:is_integer() {
     # Return status:
     # 0: okay, you can go ahead
     # 1: insufficient argument
+    # 2: not an integer
 
     if [[ "${#}" -gt 0 ]] ; then
         if [[ "${1}" =~ ^[0-9]+$ ]] ; then
             return 0
+        else
+            return 2
         fi
     else
         return 1

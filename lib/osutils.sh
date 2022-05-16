@@ -20,64 +20,161 @@
 
 export SUDOUSER="${SUDO_USER:-$USER}"
 
-osutil:check() {
+osutil:is_root() {
     case "${1}" in
-        [rR][oO][oO][tT]|--[rR][oO][oO][tT]|-[rR])
-            case "${2}" in
-                [sS][iI][lL][eE][nN][tT]|--[sS][iI][lL][eE][nN][tT]|-[sS])
-                    if [[ ${UID} != 0 ]] ; then
-                        return 1
-                    fi
-                ;;
-                *)
-                    if [[ "${UID}" != 0 ]] ; then
-                        echo -e "\033[0;31mplease run it as root privalages(!)\033[0m"
-                        return 1
-                    fi
-                ;;
-            esac
-        ;;
-        [fF][iI][lL][eE]|--[fF][iI][lL][eE]|-[fF])
-            local i="" x="true"
-            for i in "${@:2}" ; do
-                if ! [[ -f "${i}" ]] ; then
-                    echo -e "file ${i} does not exist!"
-                    local x="false"
-                fi
-            done
-
-            if [[ "${x}" = "false" ]] ; then
+        -[sS]|--[sS][iI][lL][eE][nN][tT])
+            if [[ "${UID}" = 0 ]] ; then
+                return 0
+            else
                 return 1
             fi
         ;;
-        [tT][rR][iI][gG][gG][eE][rR]|--[tT][rR][iI][gG][gG][eE][rR]|-[tT])
-            local i="" x="true"
-            for i in "${@:2}" ; do
-                if !  command -v "${i}" &> /dev/null ; then
-                    echo -e "trigger ${i} not found!"
-                    local x="false"
-                fi
-            done
-
-            if [[ "${x}" = "false" ]] ; then
-                return 1
-            fi
-
-        ;;
-        [dD][iI][rR][eE][cC][tT][oO][rR][yY]|--[dD][iI][rR][eE][cC][tT][oO][rR][yY]|-[dD][iI][rR])
-            local i="" x="true"
-            for i in "${@:2}" ; do
-                if ! [[ -d "${i}" ]] ; then
-                    echo -e "directory ${i} does not exist!"
-                    local x="false"
-                fi
-            done
-
-            if [[ "${x}" = "false" ]] ; then
+        *)
+            if [[ "${UID}" = 0 ]] ; then
+                echo -e "\033[0;32mThis user has super cow powers\033[0m."
+                return 0
+            else
+                echo -e "\033[0;31mPlease run it as root privalages\033[0m."
                 return 1
             fi
         ;;
     esac
+}
+
+osutil:check() {
+    tabs 15
+    
+    conf:check:output() {
+        case "${1}" in
+            --error|-e)
+                echo -e "\t\033[0;31mNOT\033[0m\t${2}"
+                export status="bad"
+            ;;
+            --success|-s)
+                echo -e "\t\033[0;32mOK\033[0m\t${2}"
+            ;;
+        esac
+    }
+
+    ## Check it self depends
+    file /usr/bin/command &> /dev/null || return 1
+    file /usr/bin/basename &> /dev/null || return 1
+    ## Main command block
+    
+    export status="good"
+    local i=""
+
+    # parsing arguments
+
+    while [[ "${#}" -gt 0  ]] ; do
+        case "${1}" in
+            -t)
+                shift
+                local x=""
+                while [[ "${#}" -gt 0 ]] ; do
+                    case "${1}" in
+                        -t|-f|-d)
+                            break
+                        ;;
+                        *)
+                            [[ -z "${trigger}" ]] && local trigger="${1}" || local trigger="${trigger}:${1}"
+                            shift
+                        ;;
+                    esac
+                done
+                unset x
+            ;;
+            -f)
+                shift
+                local x=""
+                while [[ "${#}" -gt 0 ]] ; do
+                    case "${1}" in
+                        -t|-f|-d)
+                            break
+                        ;;
+                        *)
+                            [[ -z "${file}" ]] && local file="${1}" || local file="${file}:${1}"
+                            shift
+                        ;;
+                    esac
+                done
+                unset x
+            ;;
+            -d)
+                shift
+                local x=""
+                while [[ "${#}" -gt 0 ]] ; do
+                    case "${1}" in
+                        -t|-f|-d)
+                            break
+                        ;;
+                        *)
+                            [[ -z "${directory}" ]] && local directory="${1}" || local directory="${directory}:${1}"
+                            shift
+                        ;;
+                    esac
+                done
+                unset x
+            ;;
+            -[sS]|--[sS][iI][lL][eE][nN][tT])
+                export IS_SILENT="yes"
+            ;;
+        esac
+        shift
+    done
+
+    local IFS=":" # <- first ifs is here and no unset recomended before
+
+    # Check trigger
+    local z=""
+    for z in ${trigger} ; do
+        if [[ "${IS_SILENT}" = "yes" ]] ; then
+            command -v "${z}" &> /dev/null || conf:check:output --error "${z} not found!"
+        else
+            command -v "${z}" &> /dev/null && conf:check:output --success "${z} found." || conf:check:output --error "${z} not found!"
+        fi
+    done
+    unset z
+
+    # Check file
+    local z=""
+    for z in ${file} ; do
+        if [[ "${IS_SILENT}" = "yes" ]] ; then
+            [[ -f "${z}" ]] || conf:check:output --error "file ${z} doesn't exist!"
+        else
+            [[ -f "${z}" ]] && conf:check:output --success "file $(basename ${z}) exist." || conf:check:output --error "file ${z} doesn't exist!"
+        fi 
+    done
+    unset z
+
+    # Check directory
+    local z=""
+    for z in ${directory} ; do
+        if [[ "${IS_SILENT}" = "yes" ]] ; then
+            [[ -d "${z}" ]] || conf:check:output --error "directory ${z} doesn't exist!"
+        else
+            [[ -d "${z}" ]] && conf:check:output --success "directory $(basename ${z}) exist." || conf:check:output --error "directory ${z} doesn't exist!"
+        fi
+    done
+    unset z
+
+    if [[ "${status}" = "good" ]] ; then
+        if [[ "${IS_SILENT}" != "yes" ]] ; then
+            echo -e "\033[0;32mAll dependencies found, skipping to next step..\033[0m"
+        fi
+        unset i x status trigger file directory IS_SILENT
+        unset -f conf:check:output
+        return 0
+    else
+        echo -e "\033[0;31mSome dependencies not found, aborting!\033[0m"
+        unset -f conf:check:output
+        unset i x status trigger file directory
+        return 1
+    fi
+
+    # If the return code != 0 then we need any error output
+    # so when you use the 'silent' option it doesn't metter 
+    # when the return code != 0.
 }
 
 osutil:define() {
@@ -150,7 +247,7 @@ osutil:define() {
 
 osutil:update() {
     # just run this function ostutil:update
-    osutil:check --root || exit 1
+    osutil:is_root --silent || exit 1
     case "$(osutil:define --base)" in
         debian)
             apt update
@@ -176,7 +273,7 @@ osutil:update() {
 
 osutil:install() {
     # osutil:install <package as base> <package as base>..
-    osutil:check --root || exit 1
+    osutil:is_root --silent || exit 1
     case "$(osutil:define --base)" in
         debian)
             apt install -y ${1}
@@ -198,7 +295,7 @@ osutil:install() {
 
 osutil:uninstall() {
     # osutil:uninstall <package as base> <package as base>..
-    osutil:check --root || exit 1
+    osutil:is_root --silent || exit 1
     case "$(osutil:define --base)" in
         debian)
             apt remove -y ${1}
@@ -216,12 +313,4 @@ osutil:uninstall() {
             zypper remove --no-confirm ${1}
         ;;
     esac
-}
-
-osutil:getfname() {
-    if [[ -d "${2}" ]] ; then
-        echo "${2}/${1}"
-    else
-        echo "${2}"
-    fi
 }

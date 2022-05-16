@@ -56,9 +56,10 @@ yaml:parse2bash:2() {
 yaml:parse2bash:3() {
     # usage:
     # yaml:parse2bash:3 "file.yaml"
-
-    local prefix=$2
-    local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
+    command -v sed &> /dev/null || return 1
+    command -v awk &> /dev/null || return 1
+    local prefix="$2"
+    local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs="$(echo @|tr @ '\034')"
     sed -ne "s|,$s\]$s\$|]|" \
             -e ":1;s|^\($s\)\($w\)$s:$s\[$s\(.*\)$s,$s\(.*\)$s\]|\1\2: [\3]\n\1  - \4|;t1" \
             -e "s|^\($s\)\($w\)$s:$s\[$s\(.*\)$s\]|\1\2:\n\1  - \3|;p" $1 | \
