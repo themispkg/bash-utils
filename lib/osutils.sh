@@ -42,139 +42,130 @@ osutil:is_root() {
 }
 
 osutil:check() {
-    tabs 15
-    
-    conf:check:output() {
+    local status="true" directory=() trigger=() file=()
+
+    while [[ "${#}" -gt 0 ]] ; do
         case "${1}" in
-            --error|-e)
-                echo -e "\t\033[0;31mNOT\033[0m\t${2}"
-                export status="bad"
-            ;;
-            --success|-s)
-                echo -e "\t\033[0;32mOK\033[0m\t${2}"
-            ;;
-        esac
-    }
-
-    ## Check it self depends
-    file /usr/bin/command &> /dev/null || return 1
-    file /usr/bin/basename &> /dev/null || return 1
-    ## Main command block
-    
-    export status="good"
-    local i=""
-
-    # parsing arguments
-
-    while [[ "${#}" -gt 0  ]] ; do
-        case "${1}" in
-            -t)
+            -d)
                 shift
-                local x=""
                 while [[ "${#}" -gt 0 ]] ; do
                     case "${1}" in
-                        -t|-f|-d)
+                        -d|-t|-f)
                             break
                         ;;
                         *)
-                            [[ -z "${trigger}" ]] && local trigger="${1}" || local trigger="${trigger}:${1}"
+                            local directory+=("${1}")
                             shift
                         ;;
                     esac
                 done
-                unset x
+            ;;
+            -t)
+                shift
+                while [[ "${#}" -gt 0 ]] ; do
+                    case "${1}" in
+                        -d|-t|-f)
+                            break
+                        ;;
+                        *)
+                            local trigger+=("${1}")
+                            shift
+                        ;;
+                    esac
+                done
             ;;
             -f)
                 shift
-                local x=""
                 while [[ "${#}" -gt 0 ]] ; do
                     case "${1}" in
-                        -t|-f|-d)
+                        -d|-t|-f)
                             break
                         ;;
                         *)
-                            [[ -z "${file}" ]] && local file="${1}" || local file="${file}:${1}"
+                            local file+=("${1}")
                             shift
                         ;;
                     esac
                 done
-                unset x
             ;;
-            -d)
+            -s|--silent)
+                local IS_SILENT="true"
                 shift
-                local x=""
-                while [[ "${#}" -gt 0 ]] ; do
-                    case "${1}" in
-                        -t|-f|-d)
-                            break
-                        ;;
-                        *)
-                            [[ -z "${directory}" ]] && local directory="${1}" || local directory="${directory}:${1}"
-                            shift
-                        ;;
-                    esac
-                done
-                unset x
             ;;
-            -[sS]|--[sS][iI][lL][eE][nN][tT])
-                export IS_SILENT="yes"
+            *)
+                shift
             ;;
         esac
-        shift
     done
 
-    local IFS=":" # <- first ifs is here and no unset recomended before
-
-    # Check trigger
-    local z=""
-    for z in ${trigger} ; do
+    # Directory
+    for i in ${directory[@]} ; do
         if [[ "${IS_SILENT}" = "yes" ]] ; then
-            command -v "${z}" &> /dev/null || conf:check:output --error "${z} not found!"
+            if ! [[ -d "${i}" ]] ; then
+                echo -e "\tDirectory: '\033[0;31m${i}\033[0m' not found!"
+                local status="false"
+            fi
         else
-            command -v "${z}" &> /dev/null && conf:check:output --success "${z} found." || conf:check:output --error "${z} not found!"
+            if [[ -d "${i}" ]] ; then
+                echo -e "\tDirectory: '\033[0;32m${i}\033[0m' found."
+            else
+                echo -e "\tDirectory: '\033[0;31m${i}\033[0m' not found!"
+                local status="false"
+            fi
         fi
     done
-    unset z
+    # end
 
-    # Check file
-    local z=""
-    for z in ${file} ; do
-        if [[ "${IS_SILENT}" = "yes" ]] ; then
-            [[ -f "${z}" ]] || conf:check:output --error "file ${z} doesn't exist!"
+    # Trigger
+    for i in ${trigger[@]} ; do
+        if [[ "${IS_SILENT}" = "true" ]] ; then
+            if ! command -v "${i}" &> /dev/null ; then
+                echo -e "\tTrigger: '\033[0;31m${i}\033[0m' not found!"
+                local status="false"
+            fi
         else
-            [[ -f "${z}" ]] && conf:check:output --success "file $(basename ${z}) exist." || conf:check:output --error "file ${z} doesn't exist!"
-        fi 
-    done
-    unset z
-
-    # Check directory
-    local z=""
-    for z in ${directory} ; do
-        if [[ "${IS_SILENT}" = "yes" ]] ; then
-            [[ -d "${z}" ]] || conf:check:output --error "directory ${z} doesn't exist!"
-        else
-            [[ -d "${z}" ]] && conf:check:output --success "directory $(basename ${z}) exist." || conf:check:output --error "directory ${z} doesn't exist!"
+            if command -v "${i}" &> /dev/null ; then
+                echo -e "\tTrigger: '\033[0;32m${i}\033[0m' found."
+            else
+                echo -e "\tTrigger: '\033[0;31m${i}\033[0m' not found!"
+                local status="false"
+            fi
         fi
     done
-    unset z
+    # end
 
-    if [[ "${status}" = "good" ]] ; then
-        if [[ "${IS_SILENT}" != "yes" ]] ; then
-            echo -e "\033[0;32mAll dependencies found, skipping to next step..\033[0m"
+    # File
+    for i in ${file[@]} ; do
+        if [[ "${IS_SILENT}" = "true" ]] ; then
+            if ! [[ -f "${i}" ]] ; then
+                echo -e "\tFile: '\033[0;31m${i}\033[0m' not found!"
+                local status="false"
+            fi
+        else
+            if [[ -f "${i}" ]] ; then
+                echo -e "\tFile: '\033[0;32m${i}\033[0m' found."
+            else
+                echo -e "\tFile: '\033[0;31m${i}\033[0m' not found!"
+                local status="false"
+            fi
         fi
-        unset i x status trigger file directory IS_SILENT
-        unset -f conf:check:output
-        return 0
+    done
+    # end
+
+    # Result
+    if [[ "${IS_SILENT}" = "true" ]] ; then
+        if [[ "${status}" = "false" ]] ; then
+            echo "\033[0;31mRequirements not met!\033[0m"
+            return 1
+        fi
     else
-        echo -e "\033[0;31mSome dependencies not found, aborting!\033[0m"
-        unset -f conf:check:output
-        unset i x status trigger file directory
-        return 1
+        if [[ "${status}" = "true" ]] ; then
+            echo -e "\033[0;32mRequirements are met.\033[0m"
+        else
+            echo -e "\033[0;31mRequirements not met!\033[0m"
+            return 1
+        fi
     fi
-
-    # If the return code != 0 then we need any error output
-    # so when you use the 'silent' option it doesn't metter 
-    # when the return code != 0.
 }
 
 osutil:define() {
